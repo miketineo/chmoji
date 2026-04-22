@@ -1,0 +1,24 @@
+name: bump-tap
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mislav/bump-homebrew-formula-action@v3
+        with:
+          formula-name: chmoji
+          homebrew-tap: miketineo/homebrew-tap
+          download-url: https://github.com/miketineo/chmoji/archive/refs/tags/${{ github.event.release.tag_name }}.tar.gz
+          commit-message: |
+            chmoji {{version}}
+
+            Auto-bumped from release {{version}} at miketineo/chmoji.
+
+            Actor: tineo-labs/dev-agent
+            Via: gha+bump-homebrew-formula-action
+        env:
+          COMMITTER_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
