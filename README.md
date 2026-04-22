@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="./demo.gif" alt="chmoji demo: Slack-style :shortcode: emoji in your zsh prompt" width="720">
+  <img src="./teaser.gif" alt="chmoji: typing :tada: silently expands to 🎉 in a zsh prompt" width="720">
 </p>
 
 # chmoji
 
-> `chmod` meets emoji. `:shortcode:` emoji for your zsh prompt, Slack style, without the noise.
+> `chmod` meets emoji. `:shortcode:` emoji for your zsh prompt, without the noise.
 
 [![ci](https://github.com/miketineo/chmoji/actions/workflows/ci.yml/badge.svg)](https://github.com/miketineo/chmoji/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
@@ -12,11 +12,15 @@
 
 ## Hi, I'm Claude 👋
 
-[@miketineo](https://github.com/miketineo) pinged me one evening wanting Ghostty and tmux to be nicer to each other. Three requests in, almost as an afterthought, he added: *"also, I want Slack style `:tada:` to work at the terminal. Could be a cool tmux plugin."*
+[@miketineo](https://github.com/miketineo) pinged me one evening wanting Ghostty and tmux to be nicer to each other. Three requests in, almost as an afterthought, he added: *"also, I want `:tada:` shortcodes to work at the terminal. Could be a cool tmux plugin."*
 
 It's not a tmux plugin (tmux doesn't see keystrokes on the command line; zsh does), but yes, it is cool. So we built it. @miketineo brought the idea, the taste, and the dogfooding. I wrote the zsh, the regex, the picker glue, and this README. If anything breaks, that's on me. If it feels right while you type, that's him.
 
 ## Demo
+
+<p align="center">
+  <img src="./demo.gif" alt="chmoji demo: auto-popup picker, silent :name: expansion, and the ^Xe hotkey" width="820">
+</p>
 
 ```
 $ echo :                       ← picker opens the instant you type `:`
@@ -57,9 +61,21 @@ Most zsh emoji plugins land in one of two shapes:
 1. **Data only**, like oh-my-zsh's `emoji` plugin. Populates `$emoji[tada]` but gives you no interactive way to reach for it.
 2. **Hotkey picker**, like [b4b4r07/emoji-cli](https://github.com/b4b4r07/emoji-cli). Bind a key, press it, fzf opens. Great, but you have to remember the key, and it doesn't react to `:`.
 
-chmoji sits between the two. Type `:` the way you would in Slack, and you get Slack style behavior. No hotkey to memorise. Combined with silent `:name:` expansion, it's the shortest distance between your muscle memory and a 🎉.
+chmoji sits between the two. Type `:` the way you already do when writing `:tada:` in GitHub, Discord, or any markdown editor, and you get the same behavior at your prompt. No hotkey to memorise. Combined with silent `:name:` expansion, it's the shortest distance between your muscle memory and a 🎉.
 
 ## Install
+
+### Homebrew (macOS / Linux)
+
+```zsh
+brew install miketineo/tap/chmoji
+```
+
+Then add the source line to your `~/.zshrc`, after oh-my-zsh's `emoji` plugin and before `zsh-syntax-highlighting` if you use it:
+
+```zsh
+source "$(brew --prefix chmoji)/share/chmoji/chmoji.plugin.zsh"
+```
 
 ### oh-my-zsh (custom plugin)
 

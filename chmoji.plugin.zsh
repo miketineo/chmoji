@@ -1,9 +1,9 @@
 # chmoji 0.1.0 | https://github.com/miketineo/chmoji
-# `:shortcode:` emoji expansion and auto-popup picker for zsh, Slack style.
+# `:shortcode:` emoji expansion and auto-popup picker for zsh.
 #
 # Triggers:
 #   1. Type `:` (after whitespace/BOL): fzf emoji picker auto-opens.
-#      Keep typing to filter live (Slack style). ESC dismisses, leaving the
+#      Keep typing to filter live. ESC dismisses, leaving the
 #      `:` in place. Disable this mode with CHMOJI_AUTO_POPUP=0.
 #   2. Type `:name:`: if the picker isn't open and `name` is a known
 #      emoji, replaces in place on the closing colon. Silent no-op if
