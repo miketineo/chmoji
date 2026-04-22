@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="./teaser.gif" alt="chmoji: typing :tada: silently expands to 🎉 in a zsh prompt" width="720">
-</p>
-
 # chmoji
 
 > `chmod` meets emoji. `:shortcode:` emoji for your zsh prompt, without the noise.
