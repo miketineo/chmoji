@@ -38,7 +38,7 @@ _chmoji_self_insert() {
 
   # Close-colon expand: `:name:` resolves to glyph.
   [[ $LBUFFER =~ '(^|[[:space:]]):([a-z0-9_+-]+):$' ]] || return 0
-  local name=$match[2]
+  local name=${match[2]}
   local glyph=${emoji[$name]:-${_chmoji_extra[$name]:-}}
   [[ -n $glyph ]] || return 0
   LBUFFER=${LBUFFER%:${name}:}$glyph
@@ -48,13 +48,13 @@ zle -N self-insert _chmoji_self_insert
 _chmoji_picker() {
   local query='' strip_len=0
   if [[ $LBUFFER =~ ':([a-z0-9_+-]*)$' ]]; then
-    query=$match[1]
+    query=${match[1]}
     strip_len=$(( ${#query} + 1 ))
   fi
   local pick
   pick=$(
     for k in ${(ok)emoji}; do
-      printf '%s\t:%s:\n' "$emoji[$k]" "$k"
+      printf '%s\t:%s:\n' "${emoji[$k]}" "$k"
     done | fzf --height=40% --reverse \
                --delimiter=$'\t' --with-nth=1,2 \
                --prompt='emoji> ' --query="$query"

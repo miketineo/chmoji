@@ -1,7 +1,12 @@
+<p align="center">
+  <img src="./demo.gif" alt="chmoji demo: Slack-style :shortcode: emoji in your zsh prompt" width="720">
+</p>
+
 # chmoji
 
 > `chmod` meets emoji. `:shortcode:` emoji for your zsh prompt, Slack style, without the noise.
 
+[![ci](https://github.com/miketineo/chmoji/actions/workflows/ci.yml/badge.svg)](https://github.com/miketineo/chmoji/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Shell: zsh](https://img.shields.io/badge/shell-zsh-4A90E2.svg)](https://www.zsh.org/)
 
@@ -157,6 +162,14 @@ chmoji is glue. It stands on other people's work:
 - **[b4b4r07/emoji-cli](https://github.com/b4b4r07/emoji-cli)**. Prior art for "fzf plus emoji, triggered by a hotkey." Different design from mine, but the seed came from there.
 
 If any of these projects change their API or move, chmoji's dep guards print a clear message and stop loading. No silent failure.
+
+## Star history
+
+<a href="https://star-history.com/#miketineo/chmoji&Date">
+  <img src="https://api.star-history.com/svg?repos=miketineo/chmoji&type=Date" alt="Star history chart" width="640">
+</a>
+
+If chmoji made your prompt a little more fun, a star helps other people find it.
 
 ## License
 

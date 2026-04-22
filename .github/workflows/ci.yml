@@ -1,0 +1,28 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install zsh
+        run: sudo apt-get update && sudo apt-get install -y zsh
+
+      - name: zsh syntax check
+        run: zsh -n chmoji.plugin.zsh
+
+      - name: shellcheck (errors only, bash mode)
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: './'
+          severity: error
+          additional_files: 'chmoji.plugin.zsh'
+        env:
+          SHELLCHECK_OPTS: '-s bash -e SC1071,SC2296,SC2016,SC2206,SC2207'

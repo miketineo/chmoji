@@ -3,3 +3,6 @@
 *~
 .idea/
 .vscode/
+
+# local-only: launch strategy, drafts, notes
+.launch/
