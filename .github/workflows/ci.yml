@@ -28,27 +28,27 @@ jobs:
           SHELLCHECK_OPTS: '-s bash -e SC1071,SC2296,SC2016,SC2206,SC2207'
 
   vim:
-    name: vim/${{ matrix.host }}
+    name: vim/${{ matrix.name }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        host:
-          - vim-v8.2.0
-          - vim
-          - neovim-stable
-          - neovim-nightly
+        include:
+          - { name: vim-8.2,        version: v8.2.0000, neovim: false }
+          - { name: vim-stable,     version: stable,    neovim: false }
+          - { name: neovim-stable,  version: stable,    neovim: true  }
+          - { name: neovim-nightly, version: nightly,   neovim: true  }
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Setup ${{ matrix.host }}
+      - name: Setup ${{ matrix.name }}
         id: vim
         uses: rhysd/action-setup-vim@v1
         with:
-          version: ${{ matrix.host }}
-          neovim: ${{ startsWith(matrix.host, 'neovim') }}
+          version: ${{ matrix.version }}
+          neovim: ${{ matrix.neovim }}
 
       - name: Run themis suite
         env:
