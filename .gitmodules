@@ -1,0 +1,3 @@
+[submodule "test/vendor/themis"]
+	path = test/vendor/themis
+	url = https://github.com/thinca/vim-themis.git

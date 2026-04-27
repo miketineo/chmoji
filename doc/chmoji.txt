@@ -1,0 +1,202 @@
+*chmoji.txt*  :shortcode: emoji expansion for Vim and Neovim.    *chmoji*
+
+==============================================================================
+CONTENTS                                                       *chmoji-contents*
+
+  1. Introduction                                          |chmoji-intro|
+  2. Usage                                                 |chmoji-usage|
+  3. Configuration                                         |chmoji-config|
+  4. Commands                                              |chmoji-commands|
+  5. Picker                                                |chmoji-picker|
+  6. Custom shortcodes                                     |chmoji-extra|
+  7. Disabling                                             |chmoji-disabling|
+  8. Troubleshooting                                       |chmoji-troubleshooting|
+
+==============================================================================
+1. Introduction                                                  *chmoji-intro*
+
+chmoji adds two behaviors to Vim's insert mode:
+
+  1. Silent close-colon expansion: type `:tada:` and on the closing colon it
+     becomes 🎉. No UI, no flicker.
+
+  2. An optional fzf-style picker, opened by hotkey or via |:Chmoji|.
+
+It ships ~4200 GitHub-style shortcodes derived from oh-my-zsh's `$emoji`
+table. Custom shortcodes can be added via |g:chmoji_extra|.
+
+The Vim plugin is the editor half of chmoji (https://github.com/miketineo/chmoji).
+The zsh half lives in the same repo and behaves identically at the prompt.
+
+==============================================================================
+2. Usage                                                          *chmoji-usage*
+
+In insert mode, type a colon-wrapped shortcode at a word boundary:
+>
+    Hello :tada:
+<
+The closing `:` triggers expansion in place:
+>
+    Hello 🎉
+<
+Word boundary means the opening `:` is at the start of the line, after
+whitespace, or after a tab. URLs and JSON literals never trigger:
+>
+    http://host:8080/         (unchanged — `:` after host)
+    {"key":"value"}           (unchanged — `:` after quote)
+    git log :/foo             (unchanged — `:` after space, but `/foo` is
+                              not a known shortcode and won't lookup)
+<
+Press `<C-x>e` (configurable, see |g:chmoji_picker_key|) in insert mode to
+open a picker over all known shortcodes. If the cursor is on a `:partial`
+token, that partial pre-fills the picker query and is replaced by the
+chosen glyph on commit.
+
+==============================================================================
+3. Configuration                                                *chmoji-config*
+
+                                                            *g:chmoji_enabled*
+g:chmoji_enabled        Default: 1
+
+  Master switch. Set to 0 to disable expansion and the picker hotkey.
+  Existing buffer-local mappings remain installed but no-op.
+
+                                                              *g:chmoji_extra*
+g:chmoji_extra          Default: {}
+
+  Dict of `name -> glyph` mappings that override the bundled data.
+>
+    let g:chmoji_extra = {'shipit': '🚢', 'lgtm': '👍'}
+<
+  Bundled names can be overridden too:
+>
+    let g:chmoji_extra = {'tada': '🎈'}
+<
+                                                         *g:chmoji_auto_popup*
+g:chmoji_auto_popup     Default: 1
+
+  When 1, typing `:` at a word boundary auto-opens the picker — same
+  behaviour as the zsh chmoji default. Set to 0 to disable:
+>
+    let g:chmoji_auto_popup = 0
+<
+  With auto-popup off, use `<C-x>e` or |:Chmoji| to open the picker manually,
+  and type the full `:name:` pattern for silent close-colon expansion.
+
+                                                             *g:chmoji_picker*
+g:chmoji_picker         Default: '' (auto-detect)
+
+  Force a specific picker backend. Valid values:
+    'fzf-lua'     — ibhagwan/fzf-lua (Neovim)
+    'snacks'      — folke/snacks.nvim (Neovim)
+    'telescope'   — nvim-telescope/telescope.nvim (Neovim)
+    'fzf-vim'     — junegunn/fzf.vim (Vim or Neovim)
+    'inputlist'   — Vim built-in numeric prompt (universal fallback)
+
+  Empty string runs auto-detection in the order listed.
+
+                                                         *g:chmoji_picker_key*
+g:chmoji_picker_key     Default: '<C-x>e'
+
+  Insert-mode key sequence that opens the picker.
+
+                                                  *g:chmoji_disabled_filetypes*
+g:chmoji_disabled_filetypes
+  Default: ['TelescopePrompt', 'fzf', 'snacks_picker_input', 'cmp_menu',
+            'help', 'qf', 'NvimTree', 'neo-tree']
+
+  Filetypes where chmoji does not install its mappings. Add picker prompts,
+  completion menus, or any buffer where `:` should pass through unchanged.
+
+                                                            *b:chmoji_disabled*
+b:chmoji_disabled       Buffer-local override.
+
+  Set to 1 in a single buffer to disable chmoji there:
+>
+    let b:chmoji_disabled = 1
+<
+==============================================================================
+4. Commands                                                  *chmoji-commands*
+
+                                                                     *:Chmoji*
+:Chmoji [{query|subcmd}]
+
+  With no argument or a shortcode query, opens the picker. Tab-completion
+  offers subcommands and shortcode names.
+>
+    :Chmoji              " open picker
+    :Chmoji rocket       " open picker pre-filtered to 'rocket'
+<
+  Subcommands:
+    disable   — turn off expansion and auto-popup (sets g:chmoji_enabled=0)
+    enable    — turn back on                      (sets g:chmoji_enabled=1)
+    toggle    — flip the current state
+>
+    :Chmoji disable
+    :Chmoji toggle
+<
+
+==============================================================================
+5. Picker                                                      *chmoji-picker*
+
+The picker dispatches to the first available backend in this order:
+
+  1. fzf-lua          — `require('fzf-lua')` succeeds
+  2. snacks.nvim      — `require('snacks.picker')` succeeds
+  3. telescope.nvim   — `require('telescope')` succeeds
+  4. fzf.vim          — `*fzf#run` exists
+  5. inputlist()      — universal fallback
+
+|g:chmoji_picker| forces a specific backend.
+
+For Neovim Lua pickers, the bridge lives at `lua/chmoji_picker.lua`. If a
+backend's API changes upstream and breaks chmoji's call site, set
+|g:chmoji_picker| to `'fzf-vim'` or `'inputlist'` until a fix lands.
+
+==============================================================================
+6. Custom shortcodes                                            *chmoji-extra*
+
+|g:chmoji_extra| takes precedence over the bundled data. Names should be
+lowercase ASCII matching `[a-z0-9_+-]+`. Glyphs can be any UTF-8 string
+(emoji, kaomoji, multi-codepoint sequences).
+>
+    let g:chmoji_extra = {
+          \ 'shipit':  '🚢',
+          \ 'lgtm':    '👍',
+          \ 'shrug':   '¯\_(ツ)_/¯',
+          \ }
+<
+==============================================================================
+7. Disabling                                                *chmoji-disabling*
+
+Three layers, finest grain wins:
+
+  - Per-buffer:  `:let b:chmoji_disabled = 1`
+  - Per-filetype: add to |g:chmoji_disabled_filetypes|
+  - Globally:    `:let g:chmoji_enabled = 0`
+
+==============================================================================
+8. Troubleshooting                                  *chmoji-troubleshooting*
+
+  - Plugin disabled with `requires &encoding=utf-8`: Vim's encoding is not
+    UTF-8. chmoji emits multibyte glyphs and refuses to install in
+    non-UTF-8 buffers. Set `:set encoding=utf-8` in vimrc and reload.
+
+  - `:tada:` doesn't expand: check
+        :verbose imap :
+    If `:` is not mapped to `chmoji#expand()` in the current buffer, the
+    filetype is in |g:chmoji_disabled_filetypes|, |g:chmoji_enabled| is 0,
+    or `'paste'` is set.
+
+  - Picker doesn't open: run
+        :echo chmoji#picker#detect()
+    to see which backend is selected. If it returns `'inputlist'` and you
+    expected fzf-lua/telescope, the corresponding plugin isn't loaded yet
+    when chmoji checks. Force the backend explicitly with |g:chmoji_picker|.
+
+  - `:Chmoji <Tab>` doesn't complete: ensure
+    `autoload/chmoji/data.json` exists in the plugin runtime path. Run
+    `scripts/regen-data.sh` to regenerate it.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

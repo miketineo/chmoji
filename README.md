@@ -1,16 +1,17 @@
 # chmoji
 
-> `chmod` meets emoji. `:shortcode:` emoji for your zsh prompt, without the noise.
+> `chmod` meets emoji. `:shortcode:` emoji for your zsh prompt, Vim, and Neovim — without the noise.
 
 [![ci](https://github.com/miketineo/chmoji/actions/workflows/ci.yml/badge.svg)](https://github.com/miketineo/chmoji/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Shell: zsh](https://img.shields.io/badge/shell-zsh-4A90E2.svg)](https://www.zsh.org/)
+[![Editor: Vim/Neovim](https://img.shields.io/badge/editor-vim%20%2F%20neovim-019733.svg)](https://www.vim.org/)
 
 ## Hi, I'm Claude 👋
 
 [@miketineo](https://github.com/miketineo) pinged me one evening wanting Ghostty and tmux to be nicer to each other. Three requests in, almost as an afterthought, he added: *"also, I want `:tada:` shortcodes to work at the terminal. Could be a cool tmux plugin."*
 
-It's not a tmux plugin (tmux doesn't see keystrokes on the command line; zsh does), but yes, it is cool. So we built it. @miketineo brought the idea, the taste, and the dogfooding. I wrote the zsh, the regex, the picker glue, and this README. If anything breaks, that's on me. If it feels right while you type, that's him.
+It's not a tmux plugin (tmux doesn't see keystrokes on the command line; zsh does), but yes, it is cool. So we built it — first for the prompt, then for Vim and Neovim once @miketineo missed `:tada:` inside his editor too. @miketineo brought the idea, the taste, and the dogfooding. I wrote the zsh widget, the Vim plugin, the regex, the picker glue, and this README. If anything breaks, that's on me. If it feels right while you type, that's him.
 
 ## Demo
 
@@ -43,12 +44,14 @@ $ echo 🎉
 
 ## What it does
 
-I add two behaviors to the zsh command line:
+I add two behaviors, in zsh and in Vim/Neovim, with the same data file and the same word-boundary semantics:
 
-1. **Auto popup picker.** The instant you type `:` at a word boundary, fzf opens over the full emoji catalog. Keep typing to filter. Enter inserts, ESC dismisses and leaves the `:` in place as a normal character.
-2. **Close colon expansion.** Type `:tada:` and it becomes 🎉 on the closing `:`. No UI, no flicker.
+1. **Close colon expansion.** Type `:tada:` and it becomes 🎉 on the closing `:`. No UI, no flicker.
+2. **Picker.** Open fzf (or your editor's fuzzy picker) over the full emoji catalog. Keep typing to filter. Enter inserts, ESC dismisses.
 
-Both coexist by default. If the popup gets in your way, flip `CHMOJI_AUTO_POPUP=0` and keep only the silent expansion plus the `^Xe` hotkey.
+In both zsh and the editor the picker auto-opens the instant you type `:` at a word boundary (`CHMOJI_AUTO_POPUP=1` / `g:chmoji_auto_popup=1`, on by default). Use `<C-x>e` or `:Chmoji` to open it manually, and `:Chmoji disable` to turn auto-popup off for the session.
+
+Both ecosystems share `oh-my-zsh`'s ~4200-shortcode `$emoji` table as the data source and reuse the same word-boundary regex, so a shortcode that triggers on the prompt also triggers in your editor.
 
 ## Why this exists
 
@@ -111,6 +114,93 @@ git clone https://github.com/miketineo/chmoji ~/.zsh/plugins/chmoji
 source ~/.zsh/plugins/chmoji/chmoji.plugin.zsh
 ```
 
+## Vim & Neovim
+
+The same repo also ships as a Vim/Neovim plugin. It uses an `<expr>` mapping on `:` (not `iabbrev` — see [Why not `iabbrev`?](#why-not-iabbrev)) and the same `:name:` data file as the zsh side, so behavior matches.
+
+### Install
+
+**[vim-plug](https://github.com/junegunn/vim-plug):**
+
+```vim
+Plug 'miketineo/chmoji'
+```
+
+**[packer.nvim](https://github.com/wbthomason/packer.nvim):**
+
+```lua
+use 'miketineo/chmoji'
+```
+
+**[lazy.nvim](https://github.com/folke/lazy.nvim):**
+
+```lua
+{ 'miketineo/chmoji' }
+```
+
+**Vim 8 native packages:**
+
+```sh
+git clone https://github.com/miketineo/chmoji ~/.vim/pack/miketineo/start/chmoji
+vim -u NONE -c "helptags ~/.vim/pack/miketineo/start/chmoji/doc | quit"
+```
+
+**Neovim native (`runtimepath`):**
+
+```sh
+git clone https://github.com/miketineo/chmoji ~/.local/share/nvim/site/pack/miketineo/start/chmoji
+```
+
+**Manual:**
+
+```sh
+git clone https://github.com/miketineo/chmoji ~/.vim/plugged/chmoji
+# add to your vimrc/init.vim:
+set runtimepath+=~/.vim/plugged/chmoji
+```
+
+**Already have it via `brew install miketineo/tap/chmoji`?** Add the runtime path to your editor config:
+
+```vim
+set runtimepath+=$(brew --prefix chmoji)/share/chmoji-vim
+silent! helptags ALL
+```
+
+### Usage
+
+In insert mode:
+
+| Action | Behavior |
+|---|---|
+| Type `:tada:` after whitespace or BOL | Silent expansion to 🎉 on the closing `:`. |
+| Type `<C-x>e` | Open the picker. If on a `:partial`, that partial pre-fills the query. |
+| `:Chmoji [query]` (normal mode) | Open the picker; insert the chosen glyph at cursor. Tab-completes shortcode names. |
+| `:Chmoji disable` / `enable` / `toggle` | Turn chmoji off/on/flip without touching your config. |
+
+The picker auto-detects the available backend in this order: `fzf-lua` → `snacks.nvim` → `telescope.nvim` → `fzf.vim` → `inputlist()` (built-in fallback). Force a specific one with `let g:chmoji_picker = 'fzf-vim'` etc.
+
+### Configuration
+
+```vim
+let g:chmoji_extra = {'shipit': '🚢', 'lgtm': '👍'}    " custom shortcodes
+let g:chmoji_enabled = 1                              " master switch
+let g:chmoji_auto_popup = 1                           " open picker on bare `:` (on by default — set 0 to disable)
+let g:chmoji_picker_key = '<C-x>e'                    " rebind picker hotkey
+let g:chmoji_disabled_filetypes = ['fzf', 'TelescopePrompt', 'cmp_menu']
+let b:chmoji_disabled = 1                             " buffer-local opt-out
+```
+
+Full reference: `:help chmoji`.
+
+### Why not `iabbrev`?
+
+The obvious recipe — `iabbrev :tada: 🎉` for every shortcode — does not work, and chmoji ships a real plugin for two empirically-verified reasons:
+
+- Vim's `iabbrev` LHS is hard-capped at 50 bytes (`MAXMAPLEN`); ~280 of the 4200 oh-my-zsh shortcodes exceed it.
+- "non-id" abbreviations (LHS that ends in non-keyword char like `:tada:`) only trigger on `<Esc>`/`<CR>`/`<C-]>`. Space, period, comma do **not** fire them — so `:tada: <space>` produces literal `:tada: `, not 🎉.
+
+The chmoji plugin uses a buffer-local insert-mode `<expr>` mapping on `:` instead, which composes cleanly with autopairs/snippets/completion popups, produces a single undo step, and works in every typing context.
+
 ## Usage
 
 | Action | Behavior |
@@ -157,13 +247,35 @@ If either is missing, chmoji prints a one line warning to stderr on load and gra
 
 ## How it works
 
+### zsh half
+
 chmoji is about 60 lines of zsh doing exactly three things:
 
 1. I wrap the ZLE `self-insert` widget so I can see every keystroke. When that keystroke is `:` at a whitespace anchored position, I either launch the picker (auto popup mode) or check whether the buffer just completed a known `:name:` pattern and swap it for the glyph.
 2. The picker streams `$emoji` entries into fzf over a tab delimited `glyph\t:name:` format. fzf does the matching. I read the selection and splice it back into the buffer.
 3. I bind `^Xe` to the picker so you can always open it on demand.
 
+### Vim/Neovim half
+
+The editor plugin is about 200 lines of vimscript with a small Lua bridge for nvim-native pickers. It does the same three things:
+
+1. A buffer-local `inoremap <silent><expr> :` calls `chmoji#expand()` on every typed `:`. The function reads the line buffer to the left of the cursor, matches the same `(^|\s):name$` regex, and returns either `:` (literal) or a `<BS>×N + glyph` string that Vim splices via the normal insertion path. Single-step undo, composes with autopairs/snippets/completion popups.
+2. The picker auto-detects an available backend (fzf-lua → snacks → telescope → fzf.vim → `inputlist()`) and on commit splices the chosen glyph at cursor, stripping any pending `:partial`.
+3. `<C-x>e` and `:Chmoji [query]` open the picker manually.
+
+Both halves share `autoload/chmoji/data.json` (generated from oh-my-zsh's `$emoji`) so a shortcode that resolves on the prompt also resolves in the editor.
+
 The whitespace anchor is what keeps this usable. `http://host:8080/`, `git log :/foo`, `{"key":"value"}`: none of them trigger anything, because the `:` isn't preceded by whitespace.
+
+## Limitations
+
+The zsh half is a ZLE widget — it intercepts keystrokes at zsh's prompt and nowhere else. So chmoji-zsh works at your shell prompt, but **not** inside:
+
+- TUI apps that draw their own input box: tmux's command line, htop search, Claude Code's input.
+- Browser textareas, GUI apps.
+- Other shells (bash, fish — though chmoji is zsh-only by design).
+
+For Vim and Neovim, [chmoji.vim](#vim--neovim) covers that gap. For everything else, you're at the mercy of each app's own abbreviation/snippet mechanism.
 
 ## Prior art and credits
 
@@ -192,11 +304,14 @@ MIT. See [LICENSE](./LICENSE).
 @miketineo maintains this repo. Issues and PRs welcome. Things I'd merge with enthusiasm:
 
 - A vendored fallback emoji list so chmoji works without oh-my-zsh loaded.
-- Install snippets for plugin managers not listed above.
+- Install snippets for plugin managers not listed above (zsh or Vim/Neovim).
 - Keybinding presets for common layouts (Alt+e for macOS friendly, Ctrl+K for emacs leaning, etc).
-- A GitHub Action that runs `shellcheck` and `zsh -n`.
+- Polish on the Lua picker bridges (`lua/chmoji_picker.lua`) — fzf-lua, snacks, telescope APIs evolve and the wrappers need to age gracefully.
+- vim9script port of `autoload/chmoji.vim` if benchmarks ever justify it.
 
-Keep the plugin tiny. If a change pushes the main file past 100 lines of code, it probably doesn't belong here.
+Tests run via [vim-themis](https://github.com/thinca/vim-themis), bundled as a submodule under `test/vendor/themis`. Run `./test/run.sh` (auto-detects nvim or `/usr/bin/vim`); pass `--all` to run against both. Add cases to `test/chmoji_test.vim` and they run on every push.
+
+Keep each half tight. The zsh widget is bounded at ~100 lines; the Vim plugin's main file at ~200. If a change pushes either past those, it probably doesn't belong here.
 
 ## Why "chmoji"?
 

@@ -26,3 +26,45 @@ jobs:
           additional_files: 'chmoji.plugin.zsh'
         env:
           SHELLCHECK_OPTS: '-s bash -e SC1071,SC2296,SC2016,SC2206,SC2207'
+
+  vim:
+    name: vim/${{ matrix.host }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host:
+          - vim-v8.2.0
+          - vim
+          - neovim-stable
+          - neovim-nightly
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup ${{ matrix.host }}
+        id: vim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          version: ${{ matrix.host }}
+          neovim: ${{ startsWith(matrix.host, 'neovim') }}
+
+      - name: Run themis suite
+        env:
+          VIM_BIN: ${{ steps.vim.outputs.executable }}
+        run: ./test/run.sh
+
+  data-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Validate data.json
+        run: |
+          jq 'type == "object" and length > 1000' autoload/chmoji/data.json | grep -q true
+          jq -r '."tada", ."rocket"' autoload/chmoji/data.json | grep -q "🎉"
+          echo "data.json: $(jq 'length' autoload/chmoji/data.json) entries"
