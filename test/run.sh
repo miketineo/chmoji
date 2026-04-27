@@ -25,9 +25,16 @@ run_one() {
     return 0
   fi
   echo "==> chmoji tests: $bin"
+  # nvim uses --headless; vim uses the themis default (-e -s).
+  local args
+  if [[ "$bin" == *nvim* ]]; then
+    args="--headless"
+  else
+    args="-e -s"
+  fi
   THEMIS_HOME="$themis_home" \
     THEMIS_VIM="$bin" \
-    THEMIS_PROFILE='default' \
+    THEMIS_ARGS="$args" \
     "$themis_home/bin/themis" --runtimepath "$repo_root" "$script_dir"
 }
 
