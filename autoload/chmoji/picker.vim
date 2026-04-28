@@ -134,6 +134,11 @@ function! s:on_pick(sel) abort
 endfunction
 
 function! s:open_inputlist(items, query) abort
+  " inputlist() is interactive; it hangs in headless nvim (--headless has no
+  " TTY so there is no stdin to read from). Return silently in that case.
+  if has('nvim') && !has('ttyin')
+    return
+  endif
   " Fallback: numeric prompt. Filter by query if provided.
   let l:filtered = a:items
   if !empty(a:query)
